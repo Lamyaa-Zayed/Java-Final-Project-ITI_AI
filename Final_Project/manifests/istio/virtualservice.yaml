@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: Final_Project
+  namespace: juliaaano
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - Final_Project
+  http:
+  - match:
+    - uri:
+        prefix: /hello
+    route:
+    - destination:
+        port:
+          number: 8000
+        host: Final_Project

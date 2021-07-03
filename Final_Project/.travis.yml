@@ -1,0 +1,72 @@
+env:
+  global:
+    - S3_ARTIFACT_PATH=<s3.bucket>/${TRAVIS_REPO_SLUG}/build-${TRAVIS_BUILD_NUMBER}
+    - LOCAL_ARTIFACT_PATH=artifacts/build-${TRAVIS_BUILD_NUMBER}
+    - AWS_DEFAULT_REGION=ap-southeast-2
+    - secure: <-- travis encrypt AWS_ACCESS_KEY_ID=aws_access_key -->
+    - secure: <-- travis encrypt AWS_SECRET_ACCESS_KEY=aws_secrect_access_key -->
+
+before_install:
+  - pip install --user awscli
+  - mkdir -p ${LOCAL_ARTIFACT_PATH}
+
+jobs:
+
+  include:
+
+    - stage: java
+      language: java
+      jdk:
+        - openjdk11
+      cache:
+        directories:
+          - "$HOME/.m2"
+      install:
+        - if [ -n "$TRAVIS_TAG" ]; then mvn versions:set -DnewVersion=$TRAVIS_TAG; fi
+        - mvn --batch-mode --show-version dependency:go-offline
+      script:
+        - mvn --batch-mode --show-version package
+        - mv target/app-*.jar ${LOCAL_ARTIFACT_PATH}/
+      after_success:
+        - aws s3 sync ${LOCAL_ARTIFACT_PATH} s3://${S3_ARTIFACT_PATH}
+
+    - stage: docker
+      language: minimal
+      services:
+        - docker
+      env:
+        - secure: <-- travis encrypt DOCKERHUB_USR=dockerhub_usr -->
+        - secure: <-- travis encrypt DOCKERHUB_PWD=dockerhub_pwd -->
+      install:
+        - aws s3 sync s3://${S3_ARTIFACT_PATH} ${LOCAL_ARTIFACT_PATH}
+        - docker build --file Dockerfile-travis --build-arg JAR_PATH=${LOCAL_ARTIFACT_PATH} --tag $TRAVIS_REPO_SLUG .
+        - if [ -n "$TRAVIS_TAG" ]; then
+            docker tag $TRAVIS_REPO_SLUG $TRAVIS_REPO_SLUG:$TRAVIS_TAG;
+          fi
+      before_script:
+        - docker run --rm --name Final_Project --detach --publish 8000:4567 $TRAVIS_REPO_SLUG && sleep 5
+      script:
+        - curl -i http://localhost:8000/status
+        - curl -i -X POST http://localhost:8000/api/greeting -d '{"name":"John","surname":"Smith"}' -H 'Content-Type:application/json' -H 'X-Request-ID:myCorrelationID' -H 'X-Log-Level:DEBUG'
+        - echo "$DOCKERHUB_PWD" | docker login -u "$DOCKERHUB_USR" --password-stdin
+        - for i in $(docker images --format "{{.Repository}}:{{.Tag}}" | grep $TRAVIS_REPO_SLUG); do docker push $i; done
+      after_success:
+        - docker logout
+
+    - stage: deploy
+      language: minimal
+      script:
+        - aws s3 sync s3://${S3_ARTIFACT_PATH} ${LOCAL_ARTIFACT_PATH}
+        - aws s3 rm s3://${S3_ARTIFACT_PATH} --recursive
+      deploy:
+        provider: releases
+        api_key:
+          secure: <-- travis encrypt github-personal-token-with-public_repo -->
+        skip_cleanup: true
+        file_glob: true
+        file:
+          - ${LOCAL_ARTIFACT_PATH}/app-*.jar
+        on:
+          # repo: owner/project
+          branch: master
+          tags: true

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Final_Project
+  labels:
+    app: Final_Project
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: Final_Project
+  template:
+    metadata:
+      labels:
+        app: Final_Project
+    spec:
+      containers:
+        - name: app
+          image: registry/namespace/name:tag
+          env:
+            - name: LOG_LEVEL
+              value: debug
+          ports:
+            - containerPort: 4567
+          volumeMounts:
+            - name: sample-volume
+              mountPath: /app/sample-volume
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 4567
+              scheme: HTTP
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 4567
+              scheme: HTTP
+          resources:
+            requests:
+              cpu: "250m"
+              memory: 512Mi
+            limits:
+              cpu: "500m"
+              memory: 1Gi
+      volumes:
+        - name: sample-volume
+          emptyDir: {}

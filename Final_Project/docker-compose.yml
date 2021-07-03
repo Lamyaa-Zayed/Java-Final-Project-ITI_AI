@@ -1,0 +1,27 @@
+version: '3.7'
+
+services:
+  app:
+    build:
+      context: .
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+    ports:
+      - target: 4567
+        published: 8000
+    networks:
+      - sample-network
+    volumes:
+      - type: volume
+        source: sample-volume
+        target: /app/sample-volume
+
+volumes:
+  sample-volume:
+    driver: local
+    labels:
+      com.juliaaano.description: "Sample volume for this app."
+
+networks:
+  sample-network:
+    driver: bridge

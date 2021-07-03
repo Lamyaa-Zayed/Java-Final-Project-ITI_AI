@@ -1,0 +1,11 @@
+FROM openjdk:11-jre-slim
+
+ARG JAR_PATH=target
+
+COPY ${JAR_PATH}/app-*.jar app/app.jar
+
+WORKDIR /app
+
+EXPOSE 4567
+
+CMD ["java", "-jar", "app.jar"]

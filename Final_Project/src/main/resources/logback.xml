@@ -1,0 +1,34 @@
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoders are assigned the type
+             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+        <encoder>
+            <pattern>%date [%thread] %-5level %logger{15} [%X{X-Request-ID}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- <logger name="com.juliaaano.spark" level="DEBUG" /> -->
+
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <turboFilter class="ch.qos.logback.classic.turbo.DynamicThresholdFilter">
+        <Key>X-Log-Level</Key>
+        <DefaultThreshold>${LOG_LEVEL:-INFO}</DefaultThreshold>
+        <MDCValueLevelPair>
+            <value>ERROR</value>
+            <level>ERROR</level>
+        </MDCValueLevelPair>
+        <MDCValueLevelPair>
+            <value>WARN</value>
+            <level>WARN</level>
+        </MDCValueLevelPair>
+        <MDCValueLevelPair>
+            <value>DEBUG</value>
+            <level>DEBUG</level>
+        </MDCValueLevelPair>
+    </turboFilter>
+
+</configuration>

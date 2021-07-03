@@ -1,0 +1,47 @@
+Configuration:
+  status: warn
+
+  Properties:
+    Property:
+      name: LOG_LEVEL
+      value: INFO
+  Appenders:
+    Console:
+      name: Console
+      target: SYSTEM_OUT
+      PatternLayout:
+        Pattern: "%d %p %c{1.} [%t] [%X{Correlation-Id}] %m%n"
+    RollingFile:
+      name: File
+      fileName: logs/app.log
+      filePattern: logs/${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz
+      PatternLayout:
+        Pattern: "%d %p %c{1.} [%t] [%X{Correlation-Id}] %m%n"
+      SizeBasedTriggeringPolicy:
+        size: 250 MB
+      DefaultRollOverStrategy:
+        max: 40
+    Async:
+      name: Async
+      AppenderRef:
+        - ref: Console
+        - ref: File
+
+  Loggers:
+    Root:
+      level: ${env:LOG_LEVEL}
+      AppenderRef:
+        - ref: Async
+
+  DynamicThresholdFilter:
+    key: X-Log-Level
+    onMatch: ACCEPT
+    onMismatch: NEUTRAL
+    defaultThreshold: INFO
+    keyValuePair:
+      -
+        key: TRACE
+        value: TRACE
+      -
+        key: DEBUG
+        value: DEBUG

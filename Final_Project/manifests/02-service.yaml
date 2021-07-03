@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: Final_Project
+  labels:
+    app: Final_Project
+spec:
+  selector:
+    app: Final_Project
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 4567
