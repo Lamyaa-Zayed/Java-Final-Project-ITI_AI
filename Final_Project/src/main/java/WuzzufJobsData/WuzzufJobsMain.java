@@ -5,19 +5,10 @@
  */
 package WuzzufJobsData;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import joinery.DataFrame;
+import org.knowm.xchart.SwingWrapper;
 /**
  *
  * @author lamya
@@ -28,59 +19,27 @@ public class WuzzufJobsMain {
     
     public static void main(String[] args) throws IOException {
         
-        WuzzufJobsDAO pDAO = new WuzzufJobsDAO();
+        WuzzufJobsDAO pDAO = new WuzzufJobsDAO("src/main/resources/Wuzzuf_Jobs.csv");
         
-        DataFrame<Object> UpdatedDataFrame = pDAO.getDataFrameFromFile("src/main/resources/Wuzzuf_Jobs.csv");
+        DataFrame<Object> UpdatedDataFrame = pDAO.getDataFrameFromFile();
         UpdatedDataFrame.drop("YearsExpNumeric").writeCsv("src/main/resources/Wuzzuf_Jobs_Updated.csv");
-        
-//        List<WuzzufData> x = pDAO.getDataFromFile("src/main/resources/Wuzzuf_Jobs.csv");
-//        for (WuzzufData x1 : x) {
-//             System.out.println(x1.toString());
-//        }
+        System.out.println("Displaying Some of Data:");    
+        System.out.println(pDAO.GetSomeData());
+        System.out.println("Displaying Structure of Data:");    
+        System.out.println(pDAO.GetDataStructure());
+        System.out.println("Displaying Summary of Data for The years of Experiance:");            
+        System.out.println(pDAO.GetSummary());
+        System.out.println("Displaying Jobs For Each Company:");            
+        System.out.println(pDAO.GetJobsForEachCompany());
+        new SwingWrapper (pDAO.GetPieChartForJobsVsCompanies(10)).displayChart ();
+        System.out.println("Displaying Jobs For Each Title:");            
+        System.out.println(pDAO.GetJobsForEachTitle());
+        new SwingWrapper (pDAO.GetBarChartForTitlesVsJobs(10)).displayChart ();
+        System.out.println("Displaying Jobs For Each Area:");            
+        System.out.println(pDAO.GetJobsForEachArea());
+        new SwingWrapper (pDAO.GetBarChartForAreasVsJobs(10)).displayChart ();
+        System.out.println("Displaying Most Demanding Skills:");            
+        System.out.println(pDAO.GetDemandingSkills());
     }
         
-//        WuzzufJobsMain xChart = new WuzzufJobsMain ();
-//        List<WuzzufJobsDAO> Data = (List<WuzzufJobsDAO>) xChart.getDataFromFile ();
-//        System.out.println(Data);
-
-//        JavaRDD<String> dataFromFile = getDataFromFile();
-//        System.out.println(dataFromFile);
-//        }
-//    
-//    public JavaRDD<String> getDataFromFile(){
-        /*
-        Logger.getLogger ("org").setLevel (Level.ERROR);
-        // CREATE SPARK CONTEXT
-        SparkConf conf = new SparkConf ().setAppName ("WuzzufJobs").setMaster ("local[3]");
-        JavaSparkContext sparkContext = new JavaSparkContext (conf);
-        // LOAD DATASETS
-        JavaRDD<String> Data = sparkContext.textFile ("src/main/resources/Wuzzuf_Jobs.csv");
-        // TRANSFORMATIONS
-        JavaRDD<String> titles = Data
-                .map (WuzzufJobsMain::extractTitle)
-                .filter (StringUtils::isNotBlank);
-       // JavaRDD<String>
-        JavaRDD<String> words = titles.flatMap (title -> Arrays.asList (title
-                .toLowerCase ()
-                .trim ()
-                .replaceAll ("\\p{Punct}", " ")
-               .split (" ")).iterator ());
-        System.out.println(words.toString());
-        // COUNTING
-        Map<String, Long> wordCounts = words.countByValue ();
-        List<Map.Entry> sorted = wordCounts.entrySet().stream().sorted(Map.Entry.comparingByValue()).collect(Collectors.toList());
-        // DISPLAY
-        for (Map.Entry<String, Long> entry : sorted) {
-            System.out.println (entry.getKey () + " : " + entry.getValue ());
-        }
-//        return Data;
-//
-    }
-        public static String extractTitle(String videoLine) {
-            try {
-                return videoLine.split (COMMA_DELIMITER)[2];
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    return "";
-                }
-            }*/
 }
