@@ -1,6 +1,9 @@
 package com.project.WuzzufJobsMain;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.knowm.xchart.BitmapEncoder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -21,7 +24,12 @@ public class WuzzufJobsMainApplication {
 	public static void main(String[] args) 
         {
             SpringApplication.run(WuzzufJobsMainApplication.class, args);
+            try {
+                Process p =  Runtime.getRuntime().exec("cmd /c WelcomePage.bat", null, new File("src/main/resources/"));
             
+           } catch (IOException ex) {
+                Logger.getLogger(WuzzufJobsMainApplication.class.getName()).log(Level.SEVERE, null, ex);
+            }
 	}
 
     @GetMapping(path = "hello")
@@ -33,21 +41,12 @@ public class WuzzufJobsMainApplication {
     @GetMapping(path = "test")
     public String getData() 
     {
-        WuzzufData DAO = new WuzzufData("1","2","3","4","5","6","7","8");
+        WuzzufDataPOJO DAO = new WuzzufDataPOJO("1","2","3","4","5","6","7","8");
         return DAO.toString();
-    }/*
-    @GetMapping(path = "hello3")
-    public String getData2() {
-        WuzzufJobsPOJO pDAO1 = new WuzzufJobsPOJO();
-        //WuzzufJobsDAO DAO = new WuzzufJobsPOJO("src/main/resources/Wuzzuf_Jobs.csv");
-        List<WuzzufData> x = pDAO1.getDataFromFile("src/main/resources/Wuzzuf_Jobs.csv");
-        for (WuzzufData x1 : x) {
-             System.out.println(x1.toString());
-        }
-    return x.toString();
-    }*/
+    }
     
-    private WuzzufJobsPOJO pDAO = new WuzzufJobsPOJO("src/main/resources/Wuzzuf_Jobs.csv");
+    private WuzzufJobsDAO pDAO = new WuzzufJobsDAO("src/main/resources/Wuzzuf_Jobs.csv");
+    private String BackBotton = "<p><button onclick=\"location.href='http://localhost:8082/api/lamyaa/read'\" type=\"button\"> Home Page</button></p>";
     @GetMapping(path = "read")
     public StringBuilder readData() 
     {
@@ -73,49 +72,53 @@ public class WuzzufJobsMainApplication {
     @GetMapping(path = "struct")
     public String getDataStructure() 
     {
-        return pDAO.getDataStructure();
+        //return pDAO.getDataStructure()+BackBotton;
+        return getHtmlTable(pDAO.getDataStructure(),"Structure of Dataset",BackBotton);
     }
     
     @GetMapping(path = "some")
     public String getSomeData() 
     {
-        return pDAO.getSomeData();
+        //return "<p>"+ pDAO.getSomeData().replace("\n", "</p><p>").replace("|", "\t")+BackBotton;
+        return getHtmlTable(pDAO.getSomeData(),"Some Data From Dataset",BackBotton);
     }
     
     @GetMapping(path = "summary")
     public String getDataSummary() 
     {
-        return pDAO.getSummary();
+        //return pDAO.getSummary()+BackBotton;
+        return getHtmlTable(pDAO.getSummary(),"Summary of Dataset",BackBotton);
     }
     
     @GetMapping(path = "clean")
     public String getDataClean() 
     {
-        return pDAO.getDataClean();
+        //return pDAO.getDataClean()+BackBotton;
+        return getHtmlTable(pDAO.getDataClean(),"Dataset after cleaning",BackBotton);
     }
     
     @GetMapping(path = "jobVsComp")
     public String getJobForEachComp() 
     {
-        return pDAO.getJobsForEachCompany();
+        return BackBotton+ pDAO.getJobsForEachCompany();
     }
     
     @GetMapping(path = "title")
     public String getJobForEachTitle() 
     {
-        return pDAO.getJobsForEachTitle();
+        return BackBotton+pDAO.getJobsForEachTitle();
     }
     
     @GetMapping(path = "area")
     public String getJobForEachLocation() 
     {
-        return pDAO.getJobsForEachArea();
+        return BackBotton+pDAO.getJobsForEachArea();
     }
     
     @GetMapping(path = "skills")
     public String getDemandingSkills() 
     {
-        return pDAO.getDemandingSkills();
+        return BackBotton+pDAO.getDemandingSkills();
     }
     
     @GetMapping(path = "bartitle")
@@ -131,7 +134,8 @@ public class WuzzufJobsMainApplication {
         StringBuilder builder = new StringBuilder();
         builder.append("<h1>Titles Bar Chart</h1>");
         builder.append("<img src='").append(imageNameAndPath).append("'/>");
-        return builder;
+        builder.append(BackBotton);
+        return builder ;
         //return new java.io.File(".").getCanonicalPath();
         // return "<img src=\""+(new java.io.File(".").getCanonicalPath())+"/"+imageNameAndPath+"\" alt=\"TitleBarChart\">";
     }
@@ -149,6 +153,7 @@ public class WuzzufJobsMainApplication {
         StringBuilder builder = new StringBuilder();
         builder.append("<h1>Areas Bar Chart</h1>");
         builder.append("<img src='").append(imageNameAndPath).append("'/>");
+        builder.append(BackBotton);
         return builder;
     }
     
@@ -165,13 +170,58 @@ public class WuzzufJobsMainApplication {
         StringBuilder builder = new StringBuilder();
         builder.append("<h1>Companies Pie Chart</h1>");
         builder.append("<img src='").append(imageNameAndPath).append("'/>");
+        builder.append(BackBotton);
         return builder;
         }
     
     @GetMapping(path = "factorize")
     public String factorizeYrsExp() throws IOException 
     {
-        return pDAO.factorizeYrsOfExp();
+        //return pDAO.factorizeYrsOfExp()+BackBotton;
+        return getHtmlTable(pDAO.factorizeYrsOfExp(),"Somedata of Dataset after factorizing",BackBotton);
     }
     
+    private String getHtmlTable(String datatext,String tableTitle,String button_ref)
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "<style>\n" +
+                "table {\n" +
+                "  font-family: arial, sans-serif;\n" +
+                "  border-collapse: collapse;\n" +
+                "  width: 100%;\n" +
+                "}\n" +
+                "\n" +
+                "td, th {\n" +
+                "  border: 1px solid #dddddd;\n" +
+                "  text-align: left;\n" +
+                "  padding: 8px;\n" +
+                "}\n" +
+                "\n" +
+                "tr:nth-child(even) {\n" +
+                "  background-color: #dddddd;\n" +
+                "}\n" +
+                "</style>\n" +
+                "</head>\n" +
+                "<body>\n");
+        builder.append(button_ref);
+        builder.append("<h1>"+tableTitle+"</h1>");
+        builder.append("<table>");
+        String[] dataArray = datatext.split("\n");
+        for (String x : dataArray )
+        {
+          if(!(x.contains("--")||x.contains("[")))
+          {
+              builder.append("<tr><td>" + x.replace("|", "</td><td>") + "</td></tr>");
+          }
+        }
+        //builder.append("<tr><td>"+ datatext.replace("\n", "</tr><tr><td>").replace("|", "</td><td>").replace("-+", "").replace("--", ""));
+        builder.append("</table>\n" +
+                "\n" +
+                "</body>\n" +
+                "</html>");
+        return builder.toString();
+    }
 }

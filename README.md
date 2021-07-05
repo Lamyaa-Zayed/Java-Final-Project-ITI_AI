@@ -3,5 +3,4 @@ Task:  • Build all java needed classes (POJO , DAO, web service and a tester c
 # Java-Final-Project-ITI_AI
 	Wuzzuf Jobs Exploratory without Spring_initlizer Web Service.
 # Wuzzuf Jobs Exploratory with Spring_initlizer Web Service:
-	Just Run the code, Open the batch script and Enjoy exploratoring the data.
-	batch script path:  Java-Final-Project-ITI_AI\WuzzufJobsMain\src\main\resources\WelcomePage.bat
+	Just Run the code and Enjoy exploratoring the data.
